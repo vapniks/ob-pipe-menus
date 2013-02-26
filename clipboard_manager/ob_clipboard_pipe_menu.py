@@ -3,11 +3,21 @@
 #
 # Copyright 2013 Joe Bloggs (vapniks@yahoo.com)
 #
-# Installation: copy this file along with ob_paste_clip.py to your openbox config directory
-# (on Ubuntu its ~/.config/openbox), then add an item to your openbox menu.xml file
+# These scripts: ob_clipboard_manager.py, ob_clipboard_pipe_menu.py & ob_paste_clip.py
+# create a pipe menu for openbox which will display the history of clippings stored by parcellite
+# or clipit, and allow you to paste one of them by selecting it.
+# Obviously either parcellite or clipit needs to be installed for this to work, and it will be
+# autodetected. parcellite should be available from the usual repositories, and clipit can be
+# obtained from here: http://clipit.rspwn.com/
+# If clipit is used then any static clippings will also be displayed in the pipe menu.
+# You may need to alter some of the following variables in ob_clipboard_manager.py:
+# clipit_history_file, parcellite_history_file, max_displayed_items 
+
+# Installation: copy ob_clipboard_manager.py, ob_clipboard_pipe_menu.py & ob_paste_clip.py to your openbox 
+# config directory (on Ubuntu its ~/.config/openbox), then add an item to your openbox menu.xml file
 # (also in the config dir) in the form:
 #
-#   <menu execute="~/.config/openbox/ob_clipboard_manager.py" id="clipboard" label="Clipboard"/>
+#   <menu execute="~/.config/openbox/ob_clipboard_pipe_menu.py" id="clipboard" label="Clipboard"/>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,18 +35,14 @@
 
 from ob_clipboard_manager import ob_cb_manager
 from os.path import expanduser
-
-# following line needs to be set to point the xml file containing your openbox keybindings
-historyfile = expanduser('~') + "/.local/share/parcellite/history"
-
+import subprocess
 
 if __name__ == '__main__':
     manager = ob_cb_manager()
     print '<?xml version="1.0" encoding="UTF-8"?>' # header
     print '<openbox_pipe_menu>' # main pipe menu element
-    # read the history file
-    manager.read_history_file()
-    manager.print_all_items()
+    # print the menu items
+    manager.print_menu_items()
     print '</openbox_pipe_menu>\n' # end pipe menu element
     
 

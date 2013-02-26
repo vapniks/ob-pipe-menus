@@ -1,11 +1,23 @@
 #!/usr/bin/env python
-# Script for pasting clips from cliboard manager. Required by ob_clipboard_manager.py
+# OpenBox pipe menu clipboard manager. Show parcellite clipboard, and inserts selected clip.
 #
 # Copyright 2013 Joe Bloggs (vapniks@yahoo.com)
 #
-# Installation: this file should be copied along with ob_clipboard_manager.py & ob_clipboard_pipe_menu.py
-# to your openbox config directory (on Ubuntu its ~/.config/openbox/).
-# See ob_clipboard_pipe_menu.py for further installation instructions.
+# These scripts: ob_clipboard_manager.py, ob_clipboard_pipe_menu.py & ob_paste_clip.py
+# create a pipe menu for openbox which will display the history of clippings stored by parcellite
+# or clipit, and allow you to paste one of them by selecting it.
+# Obviously either parcellite or clipit needs to be installed for this to work, and it will be
+# autodetected. parcellite should be available from the usual repositories, and clipit can be
+# obtained from here: http://clipit.rspwn.com/
+# If clipit is used then any static clippings will also be displayed in the pipe menu.
+# You may need to alter some of the following variables in ob_clipboard_manager.py:
+# clipit_history_file, parcellite_history_file, max_displayed_items 
+
+# Installation: copy ob_clipboard_manager.py, ob_clipboard_pipe_menu.py & ob_paste_clip.py to your openbox 
+# config directory (on Ubuntu its ~/.config/openbox), then add an item to your openbox menu.xml file
+# (also in the config dir) in the form:
+#
+#   <menu execute="~/.config/openbox/ob_clipboard_pipe_menu.py" id="clipboard" label="Clipboard"/>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +34,16 @@
 #
 
 from ob_clipboard_manager import ob_cb_manager
-import gtk
+import pygtk
+import gtk 
+import os
+import subprocess
+import sys
 
-
+# get the correct clipping
+index = int(sys.argv[1])
 manager = ob_cb_manager()
+clip = manager.clippings[index]
 
+# paste the clipping 
+x = subprocess.Popen(['xvkbd','-xsendevent','-file','-'],stdin=subprocess.PIPE,stderr=open(os.devnull)).communicate(clip)
