@@ -50,6 +50,7 @@ class ob_cb_manager:
     def __init__(self): # constructor 
         # alter the following line if your history file is found elsewhere
         self.clippings = []
+        self.running = False
         # find out which clipboard manager is running and read appropriate history file
         ps = subprocess.Popen("ps -ef | grep \"parcellite\|clipit\" | grep -v grep", shell=True, stdout=subprocess.PIPE)
         output = ps.stdout.read()
@@ -57,8 +58,10 @@ class ob_cb_manager:
         if string.find(output,"clipit") != -1:
             # read the appropriate history file
             self.read_clipit_history(length=max_displayed_items, filepath=clipit_history_file)
+            self.running = True
         elif string.find(output,"parcellite") != -1:
             self.read_parcellite_history(length=max_displayed_items, filepath=parcellite_history_file)
+            self.running = True
 
     def read_parcellite_history(self, length=20, filepath=None):
         if filepath is None:
@@ -125,13 +128,18 @@ class ob_cb_manager:
             
     # print the pipe menu items
     def print_menu_items(self):
-        for i in range(0,len(self.clippings)):
-            clip = self.clippings[i]
-            sanetext = clip.replace('&','&amp;').replace('"','&quot;').replace('<','&lt;').replace('>','&gt;').replace("'",'&apos;')
-            thisdir = os.path.dirname(os.path.realpath(__file__))
-            command = thisdir + "/ob_paste_clip.py " + str(i)
-            print '<item label="' + sanetext + '">\n<action name="execute"><execute>' + \
-                command + '</execute></action>\n</item>'
+        if self.running:
+            for i in range(0,len(self.clippings)):
+                clip = self.clippings[i]
+                sanetext = clip.replace('&','&amp;').replace('"','&quot;').replace('<','&lt;').replace('>','&gt;').replace("'",'&apos;')
+                thisdir = os.path.dirname(os.path.realpath(__file__))
+                command = thisdir + "/ob_paste_clip.py " + str(i)
+                print '<item label="' + sanetext + '">\n<action name="execute"><execute>' + \
+                    command + '</execute></action>\n</item>'
+        else:
+            print '<item label="You need to start parcellite or clipit for this to work!">\n</item>'
+            print '<item label="(without daemon option)">\n</item>' 
+
 
 
             
