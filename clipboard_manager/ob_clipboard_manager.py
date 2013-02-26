@@ -6,8 +6,9 @@
 # These scripts: ob_clipboard_manager.py, ob_clipboard_pipe_menu.py & ob_paste_clip.py
 # create a pipe menu for openbox which will display the history of clippings stored by parcellite
 # or clipit, and allow you to paste one of them by selecting it.
-# Obviously either parcellite or clipit needs to be installed for this to work, and it will be
-# autodetected. parcellite should be available from the usual repositories, and clipit can be
+# Obviously either parcellite or clipit needs to be installed for this to work, and they should not
+# be run in daemon mode.
+# parcellite should be available from the usual repositories, and clipit can be
 # obtained from here: http://clipit.rspwn.com/
 # If clipit is used then any static clippings will also be displayed in the pipe menu.
 # You may need to alter some of the following variables in ob_clipboard_manager.py:
