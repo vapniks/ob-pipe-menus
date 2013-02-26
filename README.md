@@ -9,8 +9,5 @@ clipboard_manager/ob_clipboard_manager.py : support file for ob_clipboard_pipe_m
 clipboard_manager/ob_paste_clip.py : support file for ob_clipboard_pipe_menu.py  
 
 These files should be placed in your openbox config directory (on Ubuntu its ~/.config/openbox).  
-Then for each pipe menu add a line like this to your menu.xml file:  
 
-<menu execute="~/.config/openbox/<PIPE_MENU_FILE>" id="clipboard" label="Clipboard"/>  
-
-For more details read the comments at the beginning of each file.
+For more details and installation instructions read the comments at the beginning of each file.
