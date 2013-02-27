@@ -131,10 +131,18 @@ class ob_cb_manager:
         if self.running:
             for i in range(0,len(self.clippings)):
                 clip = self.clippings[i]
-                sanetext = clip.replace('&','&amp;').replace('"','&quot;').replace('<','&lt;').replace('>','&gt;').replace("'",'&apos;')
+                sanetext = clip.replace('&','&amp;').replace('"','&quot;').replace('<','&lt;').replace('>','&gt;').replace("'",'&apos;').replace('_','__')
+                if i < 10:
+                    shortcut = '_' + str(i) + ': '
+                elif i < 10+26:
+                    shortcut = '_' + string.ascii_lowercase[i-10] + ': '
+                elif i < 36+26:
+                    shortcut = '_' + string.ascii_uppercase[i-36] + ': '
+                else:
+                    shortcut = '   '
                 thisdir = os.path.dirname(os.path.realpath(__file__))
                 command = thisdir + "/ob_paste_clip.py " + str(i)
-                print '<item label="' + sanetext + '">\n<action name="execute"><execute>' + \
+                print '<item label="' + shortcut + sanetext + '">\n<action name="execute"><execute>' + \
                     command + '</execute></action>\n</item>'
         else:
             print '<item label="You need to start parcellite or clipit for this to work!">\n</item>'
