@@ -128,10 +128,13 @@ class ob_cb_manager:
             
     # print the pipe menu items
     def print_menu_items(self):
+        dic = {'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;',"'":'&apos;','_':'__','':' ','':' '}
         if self.running:
             for i in range(0,len(self.clippings)):
                 clip = self.clippings[i]
-                sanetext = clip.replace('&','&amp;').replace('"','&quot;').replace('<','&lt;').replace('>','&gt;').replace("'",'&apos;').replace('_','__')
+                sanetext = clip[:50]
+                for j, k in dic.iteritems():
+                    sanetext = sanetext.replace(j, k)
                 if i < 10:
                     shortcut = '_' + str(i) + ': '
                 elif i < 10+26:
