@@ -29,6 +29,7 @@
 #
 
 import xml.parsers.expat
+import re
 from string import strip, replace, rjust
 from xml.sax import make_parser
 from xml.sax import saxutils
@@ -49,7 +50,8 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
         self.action = ''
         self.name = ''
         self.rcfile = rcfilepath
-        
+        self.replacements = {"C-":"Ctrl+","W-":"Windows+","S-":"Shift+","A-":"Alt+"}
+        self.regexp = re.compile('|'.join(map(re.escape, self.replacements.keys())))
     # this function should return a string containing the command you want to run for the current keybinding        
     def editCommand(self): 
         return 'emacsclient -a emacs -e \'(progn (find-file "' + self.rcfile + '") ' + \
@@ -58,12 +60,15 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
     # override function from DefaultHandler, called at start of xml element
     def startElement(self, name, attrs): 
         if name == 'keybind':
-            self.in_keybind = 1
-            self.keybind = attrs.get('key',None) # Get the keybinding
-            self.keybind2 = replace(self.keybind,'C-','Ctrl+')
-            self.keybind2 = replace(self.keybind2,'W-','Windows+')
-            self.keybind2 = replace(self.keybind2,'S-','Shift+')
-            self.keybind2 = replace(self.keybind2,'A-','Alt+')
+            # Get the keybinding and perform replacements to make more readable
+            self.keybind = attrs.get('key',None)
+            self.keybind = self.regexp.sub(lambda match: self.replacements[match.group(0)], self.keybind)
+            self.in_keybind += 1
+            # append the keybinding text to self.keybind2 (could be a keychain)
+            if self.in_keybind == 1:
+                self.keybind2 = self.keybind
+            else:
+                self.keybind2 += "  " + self.keybind
         elif (name == 'action') and (self.in_keybind == 1):
             self.in_action = 1
             self.action = attrs.get('name', None)
@@ -76,9 +81,11 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
     # override function from DefaultHandler, called at end of xml element            
     def endElement(self, name):
         if name == 'keybind':
-            self.in_keybind = 0
+            self.in_keybind -= 1
             self.in_action = 0
             self.has_command = 0
+            # remove last keybinding from the current keychain
+            self.keybind2 = re.sub("  [^ ]+$","",self.keybind2)
         elif (name == 'name'):
             self.in_name = 0
         elif (name == 'command') and self.in_keybind:
