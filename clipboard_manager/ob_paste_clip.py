@@ -45,6 +45,7 @@ import sys
 index = int(sys.argv[1])
 manager = ob_cb_manager()
 clip = manager.clippings[index]
-
+# remove control chars from clipping (to prevent accidents)
+clip = clip.translate(None,manager.ctrlchars)
 # paste the clipping 
 x = subprocess.Popen(['xvkbd','-xsendevent','-file','-'],stdin=subprocess.PIPE,stderr=open(os.devnull)).communicate(clip)

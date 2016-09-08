@@ -136,10 +136,10 @@ class ob_cb_manager:
         if self.running:
             for i in range(0,len(self.clippings)):
                 clip = self.clippings[i]
+                # remove control characters 
+                sanetext = clip[:50].translate(None,self.ctrlchars)
                 # replace characters that cause problems in XML                
-                sanetext = self.regexp.sub(lambda match: self.replacements[match.group(0)], clip[:50])
-                # remove control characters
-                sanetext = sanetext.translate(None,self.ctrlchars)
+                sanetext = self.regexp.sub(lambda match: self.replacements[match.group(0)], sanetext)
                 # add shortcut keys
                 if i < 10:
                     shortcut = '_' + str(i) + ': '
