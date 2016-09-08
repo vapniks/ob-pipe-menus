@@ -36,10 +36,11 @@
 
 import os
 import struct
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape, XMLGenerator
 from os.path import expanduser
 import string
 import subprocess
+import re
 
 # change the following paths if necessary
 clipit_history_file = expanduser('~') + "/.local/share/clipit/history"
@@ -47,7 +48,11 @@ parcellite_history_file = expanduser('~') + "/.local/share/parcellite/history"
 max_displayed_items = 20
 
 class ob_cb_manager:
-    def __init__(self): # constructor 
+    def __init__(self): # constructor
+        # create regexp for character replacement
+        self.replacements = {'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;',"'":'&apos;','_':'__','':' ','':' '}
+        self.regexp = re.compile('|'.join(map(re.escape, self.replacements.keys())))
+        self.ctrlchars = reduce(lambda x, y: type(x) is str and x + chr(y) or chr(x) + chr(y),range(33))
         # alter the following line if your history file is found elsewhere
         self.clippings = []
         self.running = False
@@ -128,13 +133,14 @@ class ob_cb_manager:
             
     # print the pipe menu items
     def print_menu_items(self):
-        dic = {'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;',"'":'&apos;','_':'__','':' ','':' '}
         if self.running:
             for i in range(0,len(self.clippings)):
                 clip = self.clippings[i]
-                sanetext = clip[:50]
-                for j, k in dic.iteritems():
-                    sanetext = sanetext.replace(j, k)
+                # replace characters that cause problems in XML                
+                sanetext = self.regexp.sub(lambda match: self.replacements[match.group(0)], clip[:50])
+                # remove control characters
+                sanetext = sanetext.translate(None,self.ctrlchars)
+                # add shortcut keys
                 if i < 10:
                     shortcut = '_' + str(i) + ': '
                 elif i < 10+26:
