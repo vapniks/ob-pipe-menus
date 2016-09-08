@@ -58,7 +58,8 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
             '(goto-char (point-min)) (re-search-forward "\\\"' + self.keybind + '\\\""))\''
         
     # override function from DefaultHandler, called at start of xml element
-    def startElement(self, name, attrs): 
+    def startElement(self, name, attrs):
+        # start of <keybind ...> item
         if name == 'keybind':
             # Get the keybinding and perform replacements to make more readable
             self.keybind = attrs.get('key',None)
@@ -69,34 +70,52 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
                 self.keybind2 = self.keybind
             else:
                 self.keybind2 += "  " + self.keybind
-        elif (name == 'action') and (self.in_keybind == 1):
+        # start of <action ...> item within <keybind ...> item
+        elif (name == 'action') and (self.in_keybind > 0):
             self.in_action = 1
             self.action = attrs.get('name', None)
-        elif (name == 'name') and (self.in_action == 1) and (self.action == 'Execute'):
+        # start of <name> item within <action ..."> item
+        elif (name == 'name') and (self.in_action == 1):
+            # reset "name" variable (it gets set by "characters" function)
             self.name = ''
             self.in_name = 1
+        # start of <command> item
         elif (name == 'command'):
             self.has_command = 1
             
     # override function from DefaultHandler, called at end of xml element            
     def endElement(self, name):
+        # end of </keybind> item
         if name == 'keybind':
             self.in_keybind -= 1
             self.in_action = 0
             self.has_command = 0
             # remove last keybinding from the current keychain
             self.keybind2 = re.sub("  [^ ]+$","",self.keybind2)
+            # make sure we don't carry unused names across to next keybinding
+            self.name = ''
+        # end of </name> item
         elif (name == 'name'):
             self.in_name = 0
+        # end of </command> item
         elif (name == 'command') and self.in_keybind:
             print '<item label="' + self.keybind2 + rjust(strip(self.name),100) + \
                 '">\n<action name="execute"><execute>' + self.editCommand() + '</execute></action>\n</item>'
+            self.name = '' 
+        # end of </action> item within <keybind ...> item which has no <command> item
         elif (name =='action') and self.in_keybind and (not self.has_command):
-            print '<item label="' + self.keybind2 + rjust(self.action,100) + \
-                '">\n<action name="execute"><execute>' + self.editCommand() + '</execute></action>\n</item>'
+            if self.name == '':
+                print '<item label="' + self.keybind2 + rjust(self.action,100) + \
+                  '">\n<action name="execute"><execute>' + self.editCommand() + '</execute></action>\n</item>'
+            else:
+                print '<item label="' + self.keybind2 + rjust(strip(self.name),100) + \
+                  '">\n<action name="execute"><execute>' + self.editCommand() + '</execute></action>\n</item>'
+                self.name = ''
+                
 
     # override function from DefaultHandler, called as each character outside an xml tag is read
     def characters(self,ch):
+        # only save chars within a <name> item
         if self.in_name:
             self.name = self.name + ch
             
