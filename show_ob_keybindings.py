@@ -50,7 +50,7 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
         self.action = ''
         self.name = ''
         self.rcfile = rcfilepath
-        self.replacements = {"C-":"Ctrl+","W-":"Windows+","S-":"Shift+","A-":"Alt+"}
+        self.replacements = {"C-":"Ctrl+","W-":"Windows+","S-":"Shift+","A-":"Alt+","M-":"Meta+","H-":"Hyper+"}
         self.regexp = re.compile('|'.join(map(re.escape, self.replacements.keys())))
     # this function should return a string containing the command you want to run for the current keybinding        
     def editCommand(self): 
