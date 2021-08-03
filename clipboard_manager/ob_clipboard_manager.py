@@ -53,7 +53,6 @@ class ob_cb_manager:
         self.replacements = {'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;',"'":'&apos;','_':'__','':' ','':' '}
         self.regexp = re.compile('|'.join(map(re.escape, self.replacements.keys())))
         self.ctrlchars = reduce(lambda x, y: type(x) is str and x + chr(y) or chr(x) + chr(y),range(33))
-        # alter the following line if your history file is found elsewhere
         self.clippings = []
         self.running = False
         # find out which clipboard manager is running and read appropriate history file
