@@ -137,6 +137,8 @@ class ob_cb_manager:
                 clip = self.clippings[i]
                 # remove control characters 
                 sanetext = clip[:50].translate(None,self.ctrlchars)
+                # remove non-ascii chars
+                sanetext = sanetext.decode('ascii','ignore')
                 # replace characters that cause problems in XML                
                 sanetext = self.regexp.sub(lambda match: self.replacements[match.group(0)], sanetext)
                 # add shortcut keys
