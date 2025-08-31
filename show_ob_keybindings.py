@@ -10,7 +10,7 @@
 # 
 # IMPORTANT: you need to change the rcfilepath variable to point to the xml file containing
 # your openbox keybindings.
-# Also, the default editor is set to emacsclient (make sure if matches your version of emacs).
+# Also, the default editor is set to emacsclient (make sure it matches your version of emacs).
 # If you want to use a different editor you need to change the editCommand function below.
 #
 #
@@ -64,9 +64,10 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
         if name == 'keybind':
             # Get the keybinding and perform replacements to make more readable
             self.keybind = attrs.get('key',None)
+            # Replace each key (C-,W-,S-,A-,M-,H-) with corresponding name (Windows+,Shift+,Alt+,Meta+,Hyper+)
             self.keyname = self.regexp.sub(lambda match: self.replacements[match.group(0)], self.keybind)
             self.in_keybind += 1
-            # append the keybinding text to self.keychainname (could be a keychain)
+            # append the keybinding name to self.keychainname (could be a keychain)
             if self.in_keybind == 1:
                 self.keychainname = self.keyname
             else:
