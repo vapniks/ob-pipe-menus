@@ -10,8 +10,8 @@
 # 
 # IMPORTANT: you need to change the rcfilepath variable to point to the xml file containing
 # your openbox keybindings.
-# Also, the default editor is set to emacsclient. If you want to use a different editor you need to
-# change the editCommand function below.
+# Also, the default editor is set to emacsclient (make sure if matches your version of emacs).
+# If you want to use a different editor you need to change the editCommand function below.
 #
 #
 # This program is free software: you can redistribute it and/or modify
@@ -46,16 +46,17 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
         self.in_name = 0
         self.has_command = 0
         self.keybind = ''
-        self.keybind2 = ''
+        self.keyname = ''
+        self.keychainname = ''
         self.action = ''
         self.name = ''
         self.rcfile = rcfilepath
         self.replacements = {"C-":"Ctrl+","W-":"Windows+","S-":"Shift+","A-":"Alt+","M-":"Meta+","H-":"Hyper+"}
         self.regexp = re.compile('|'.join(map(re.escape, self.replacements.keys())))
     # this function should return a string containing the command you want to run for the current keybinding        
-    def editCommand(self): 
-        return 'emacsclient -a emacs -e \'(progn (find-file "' + self.rcfile + '") ' + \
-            '(goto-char (point-min)) (re-search-forward "\\\"' + self.keybind + '\\\""))\''
+    def editCommand(self,rcfile,keybind): 
+        return 'emacsclient -a emacs -e \'(progn (find-file "' + rcfile + '") ' + \
+            '(goto-char (point-min)) (re-search-forward "\\\"' + keybind + '\\\""))\''
         
     # override function from DefaultHandler, called at start of xml element
     def startElement(self, name, attrs):
@@ -63,13 +64,13 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
         if name == 'keybind':
             # Get the keybinding and perform replacements to make more readable
             self.keybind = attrs.get('key',None)
-            self.keybind = self.regexp.sub(lambda match: self.replacements[match.group(0)], self.keybind)
+            self.keyname = self.regexp.sub(lambda match: self.replacements[match.group(0)], self.keybind)
             self.in_keybind += 1
-            # append the keybinding text to self.keybind2 (could be a keychain)
+            # append the keybinding text to self.keychainname (could be a keychain)
             if self.in_keybind == 1:
-                self.keybind2 = self.keybind
+                self.keychainname = self.keyname
             else:
-                self.keybind2 += "  " + self.keybind
+                self.keychainname += "  " + self.keyname
         # start of <action ...> item within <keybind ...> item
         elif (name == 'action') and (self.in_keybind > 0):
             self.in_action = 1
@@ -91,7 +92,7 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
             self.has_command = 0
             # remove last keybinding from the current keychain
             self.in_keybind -= 1
-            self.keybind2 = re.sub("  [^ ]+$","",self.keybind2)
+            self.keychainname = re.sub("  [^ ]+$","",self.keychainname)
             # make sure we don't carry unused names across to next keybinding
             self.name = ''
         # end of </name> item
@@ -99,20 +100,23 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
             self.in_name = 0
         # print menu item after end of </command> item (which is in a <keybind ...> item)
         elif (name == 'command') and self.in_keybind:
-            print '<item label="' + self.keybind2 + rjust(strip(self.name),100) + \
-                '">\n<action name="execute"><execute>' + self.editCommand() + '</execute></action>\n</item>'
+            print '<item label="' + self.keychainname + rjust(strip(self.name),100) + \
+                '">\n<action name="execute"><execute>' + self.editCommand(self.rcfile,self.keybind) + \
+                '</execute></action>\n</item>'
             self.name = '' 
         # print menu item after end of </action> item (within <keybind ...> item)
         # unless a <command> item has already been printed
         elif (name =='action') and (self.in_keybind > 0) and (not self.has_command):
             # if there's no <name> item for this action, print the action name
             if self.name == '':
-                print '<item label="' + self.keybind2 + rjust(self.action,100) + \
-                  '">\n<action name="execute"><execute>' + self.editCommand() + '</execute></action>\n</item>'
+                print '<item label="' + self.keychainname + rjust(self.action,100) + \
+                  '">\n<action name="execute"><execute>' + self.editCommand(self.rcfile,self.keybind) + \
+                  '</execute></action>\n</item>'
             # otherwise print the <name>
             else:
-                print '<item label="' + self.keybind2 + rjust(strip(self.name),100) + \
-                  '">\n<action name="execute"><execute>' + self.editCommand() + '</execute></action>\n</item>'
+                print '<item label="' + self.keychainname + rjust(strip(self.name),100) + \
+                  '">\n<action name="execute"><execute>' + self.editCommand(self.rcfile,self.keybind) + \
+                  '</execute></action>\n</item>'
                 self.name = ''
                 
 
