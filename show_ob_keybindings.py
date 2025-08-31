@@ -62,7 +62,7 @@ class rcHandler(saxutils.handler.ContentHandler): # handler class inherits from 
     def startElement(self, name, attrs):
         # start of <keybind ...> item
         if name == 'keybind':
-            # Get the keybinding and perform replacements to make more readable
+            # Get the keybinding and perform replacements to make it more readable
             self.keybind = attrs.get('key',None)
             # Replace each key (C-,W-,S-,A-,M-,H-) with corresponding name (Windows+,Shift+,Alt+,Meta+,Hyper+)
             self.keyname = self.regexp.sub(lambda match: self.replacements[match.group(0)], self.keybind)
